@@ -39,7 +39,7 @@
         ["Languages", "TypeScript, Python, C#"],
         ["Frontend", "React, Next.js, Tailwind"],
         ["Backend", "Postgres, tRPC, Docker"],
-        ["Cloud", "Azure (SignalR)", "AWS (EC2+S3)", "GCP (Cloud Storage)"],
+        ["Cloud", "Azure (SignalR) AWS (EC2+S3) GCP (Cloud Storage)"],
         ["Editor", "VSCode, Rider"]
       ]
     },
