@@ -20,7 +20,7 @@ import urllib.request
 from html import escape
 from pathlib import Path
 
-from PIL import Image, ImageFilter, ImageOps
+from PIL import Image, ImageChops, ImageFilter, ImageOps
 
 # ---------------------------------------------------------------- ascii art
 
@@ -30,6 +30,11 @@ RAMPS = {
     "dense": " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$",
     "minimal": " .:*#@",
     "shade": " ░▒▓█",
+    # Letters only, ordered by measured ink coverage in Menlo (r 4.1% -> N 11.6%)
+    # and picked at even steps across that range. Level 0 stays a space: the
+    # faintest letter still covers ~4x what "." does, so without it the
+    # background fills in solid and the portrait loses its silhouette.
+    "letters": " rtoHN",
 }
 
 # Must match the char/line spacing render_svg() actually draws with, or ascii
@@ -54,6 +59,10 @@ def image_to_ascii(
     ramp: str = "blocks",
     invert: bool = False,
     contrast: float = 1.0,
+    gamma: float = 1.0,
+    relief: float = 0.0,
+    relief_radius: float = 0.05,
+    floor: float = 0.0,
     char_aspect: float = DEFAULT_CHAR_ASPECT,
     denoise: int = 3,
 ) -> list[str]:
@@ -87,6 +96,38 @@ def image_to_ascii(
         # structure; a whole-image stretch keeps it clean rather than noisy.
         cutoff = max(0.0, (contrast - 1.0) * 5.0)
         img = ImageOps.autocontrast(img, cutoff=cutoff, mask=fg_mask)
+
+    if relief:
+        # A short ramp has too few steps to render features that are only a
+        # little darker than the skin around them - on a flatly-lit portrait the
+        # eye sockets sit within ~50 grey levels of the cheeks, and quantising
+        # to a handful of glyphs erases them. Subtracting a blurred copy from
+        # the original leaves whatever is darker than its own neighbourhood
+        # (sockets, brows, nostrils, lip line) and deepens it, so those features
+        # drop to a space and read as voids instead of dissolving into the face.
+        blur = img.filter(ImageFilter.GaussianBlur(relief_radius * img.size[0]))
+        shadow = ImageChops.subtract(blur, img)
+        shadow = shadow.point(lambda v: min(255, int(v * relief)))
+        img = ImageChops.subtract(img, shadow)
+
+    if gamma != 1.0:
+        # Pulls mid-tones toward black *after* the contrast stretch, so the
+        # ramp only spends its denser glyphs on genuine highlights. Anything
+        # dim - background bleed, flat shadow - falls to a space and drops out
+        # entirely, which is what keeps a short ramp from looking like noise.
+        img = img.point(lambda v: int(255 * (v / 255) ** gamma))
+
+    if floor and fg_mask is not None:
+        # Dark clothing sits only just above the composited-black background
+        # (the shirt here is grey ~70), so a punchy stretch plus gamma pushes it
+        # under the ramp's first step and the shoulders vanish while the face
+        # survives. The alpha channel already tells us exactly which pixels are
+        # subject, so lift everything inside the silhouette to at least `floor`
+        # ramp steps. Needs the mask to have any meaning - without a cut-out
+        # there is no "outside" and this would just flood the whole frame.
+        lo = int(255 * floor / max(1, len(chars) - 1))
+        lifted = img.point(lambda v: lo + int(v * (255 - lo) / 255))
+        img = ImageChops.composite(lifted, img, fg_mask)
 
     if invert:
         img = ImageOps.invert(img)
@@ -206,6 +247,14 @@ def build_lines(cfg: dict, stats: dict) -> list[tuple[str, str, str]]:
 
 
 def render_svg(ascii_rows: list[str], lines, theme: dict, opts: dict) -> str:
+    # Every row is drawn with textLength pinned to the width of the widest row,
+    # so a short row would be stretched across the whole block and skew the
+    # drawing. Image-derived art is always exactly `width` chars, but a
+    # hand-authored literal has ragged line lengths - pad it to a rectangle.
+    if ascii_rows:
+        art_cols = max(len(r) for r in ascii_rows)
+        ascii_rows = [r.ljust(art_cols) for r in ascii_rows]
+
     fs = opts.get("font_size", 13)
     lh = round(fs * LINE_HEIGHT_RATIO, 2)
     ch = fs * CHAR_WIDTH_RATIO  # monospace advance width
@@ -345,7 +394,13 @@ def main() -> int:
     source = art_cfg.get("source")
     if source and source.startswith("{{avatar}}") and username:
         source = f"https://github.com/{username}.png?size=460"
-    if source:
+    # A hand-drawn block wins over an image source when both are present, so
+    # switching between the two is just adding or deleting `literal` - no need
+    # to also strip the whole image-tuning section out of the config.
+    if art_cfg.get("literal"):
+        print("-> using hand-authored ascii (literal)")
+        rows = art_cfg["literal"]
+    elif source:
         print(f"-> rendering ascii from {source}")
         rows = image_to_ascii(
             source,
@@ -353,6 +408,10 @@ def main() -> int:
             ramp=art_cfg.get("ramp", "blocks"),
             invert=art_cfg.get("invert", False),
             contrast=art_cfg.get("contrast", 1.0),
+            gamma=art_cfg.get("gamma", 1.0),
+            relief=art_cfg.get("relief", 0.0),
+            relief_radius=art_cfg.get("relief_radius", 0.05),
+            floor=art_cfg.get("floor", 0.0),
             char_aspect=art_cfg.get("char_aspect", DEFAULT_CHAR_ASPECT),
             denoise=art_cfg.get("denoise", 3),
         )

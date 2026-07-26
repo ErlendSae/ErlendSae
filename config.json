@@ -7,9 +7,13 @@
   "ascii": {
     "source": "portrait.png",
     "width": 78,
-    "ramp": "dense",
+    "ramp": "letters",
     "invert": false,
-    "contrast": 1.4,
+    "contrast": 1.6,
+    "gamma": 1.8,
+    "relief": 2.5,
+    "relief_radius": 0.05,
+    "floor": 1,
     "denoise": 3,
     "char_aspect": 0.4138
   },
@@ -39,7 +43,7 @@
         ["Languages", "TypeScript, Python, C#"],
         ["Frontend", "React, Next.js, Tailwind"],
         ["Backend", "Postgres, tRPC, Docker"],
-        ["Cloud", "Azure (SignalR) AWS (EC2+S3) GCP (Cloud Storage)"],
+        ["Cloud", "Azure (SignalR), AWS (EC2+S3), GCP (Cloud Storage)"],
         ["Editor", "VSCode, Rider"]
       ]
     },
