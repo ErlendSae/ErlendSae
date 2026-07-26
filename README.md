@@ -1,5 +1,3 @@
-![copy_cover](https://github.com/user-attachments/assets/e307340a-3361-4faa-82bf-c3832d462571)
-
 <p align="center">
   <img src="./profile-card.svg" alt="erlend@github" width="820">
 </p>
