@@ -263,8 +263,6 @@ def render_svg(ascii_rows: list[str], lines, theme: dict, opts: dict) -> str:
             f'<path d="M0 10a10 10 0 0 1 10-10h{body_w - 20:.0f}a10 10 0 0 1 10 10v24H0z" '
             f'fill="{theme["chrome"]}"/>'
         )
-        for i, col in enumerate(("#ff5f56", "#ffbd2e", "#27c93f")):
-            p.append(f'<circle cx="{20 + i * 18}" cy="17" r="6" fill="{col}"/>')
         label = escape(opts.get("window_title", "~/profile"))
         p.append(
             f'<text x="{body_w / 2:.0f}" y="21" fill="{theme["border"]}" '
