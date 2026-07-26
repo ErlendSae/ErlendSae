@@ -1,0 +1,75 @@
+{
+  "github_username": "ErlendSae",
+  "fetch_stats": true,
+  "output": "profile-card.svg",
+  "title": "erlend@sae",
+
+  "ascii": {
+    "source": "portrait.png",
+    "width": 78,
+    "ramp": "dense",
+    "invert": false,
+    "contrast": 1.4,
+    "denoise": 3,
+    "char_aspect": 0.4138
+  },
+
+  "layout": {
+    "font_size": 13,
+    "art_font_size": "fit",
+    "key_column": 24,
+    "window_chrome": true,
+    "window_title": "~/erlend"
+  },
+
+  "sections": [
+    {
+      "items": [
+        ["Name", "Erlend Løken Sæveraas"],
+        ["Location", "Trondheim, Norway"],
+        ["Uptime", "student @ NTNU"],
+        ["Working on", "@dotkom / Online"],
+        ["Learning", "databases, search"],
+        ["Open to", "collaborating on software"]
+      ]
+    },
+    {
+      "heading": "Stack",
+      "items": [
+        ["Languages", "TypeScript, Python, C#"],
+        ["Frontend", "React, Next.js, Tailwind"],
+        ["Backend", "Postgres, tRPC, Docker"],
+        ["Cloud", "Azure (SignalR)", "AWS (EC2+S3)", "GCP (Cloud Storage)"],
+        ["Editor", "VSCode, Rider"]
+      ]
+    },
+    {
+      "heading": "Interests",
+      "items": [
+        ["Software", "vibing >:)"],
+        ["Offline", "guitar, gaming, climbing"]
+      ]
+    },
+    {
+      "heading": "Stats",
+      "items": [
+        ["Repos", "{{repos}}"],
+        ["Stars", "{{stars}}"],
+        ["Followers", "{{followers}}"],
+        ["Top languages", "{{top_languages}}"]
+      ]
+    }
+  ],
+
+  "theme": {
+    "bg": "#0d1117",
+    "chrome": "#161b22",
+    "border": "#30363d",
+    "ascii": "#7aa2f7",
+    "title": "#f7768e",
+    "section": "#9ece6a",
+    "key": "#7dcfff",
+    "dots": "#2b3340",
+    "value": "#c0caf5"
+  }
+}
